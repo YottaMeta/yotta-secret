@@ -68,7 +68,7 @@
 
 三种方式任选（详细见下方「安装」节）：
 
-`bash
+```bash
 # 方式一：npx 一行安装（推荐，8+ 类智能体）
 npx -y @yottameta/yotta-secret --agent codex
 
@@ -76,13 +76,13 @@ npx -y @yottameta/yotta-secret --agent codex
 bash install.sh --agent claude
 
 # 方式三：手动复制 yottaskills/yotta-secret/ 到智能体的 skills 目录
-`
+```
 
 ### 使用
 
 Windows 用 python，Linux/macOS 用 python3。
 
-`bash
+```bash
 # 扫描目录（递归，自动跳过 .git / node_modules / 二进制）
 python3 scripts/yotta_secret.py scan --path src/
 
@@ -100,7 +100,7 @@ python3 scripts/yotta_secret.py verify --value ghp_xxxxxxxxxxxxxxxx
 
 # 把文本中的疑似密钥打码
 python3 scripts/yotta_secret.py mask --path notes.txt --output safe.txt
-`
+```
 
 退出码：**scan 0** = 未发现；**1** = 发现疑似密钥；**4** = 用法 / 读取 / git 不可用错误。
 verify 命中规则返回 1，未命中返回 0。
@@ -115,10 +115,10 @@ verify 命中规则返回 1，未命中返回 0。
 
 - 在写入 / 提交前先跑 `scan`：退出码 1 = 发现疑似密钥 → 拦截并提示人工处理；
 - `scan --format json` 的结果可直接交给元盾做审计留痕，或接入 CI 门禁：
-  `bash
+  ```bash
   python3 scripts/yotta_secret.py scan --path . --format json --output secret-report.json
   # 退出码非 0 时终止提交 / 构建
-  `
+  ```
 
 ## 检测类型
 
@@ -148,9 +148,9 @@ verify 命中规则返回 1，未命中返回 0。
 
 技能包内自带测试（含在 npm 包 files 中）：
 
-`bash
+```bash
 python scripts/test_yotta_secret.py   # 91 项测试（Windows 用 python）
-`
+```
 
 修改引擎后请保持测试全绿，再升版本发布。
 
