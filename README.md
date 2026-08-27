@@ -66,19 +66,51 @@ It is not tied to any single platform: an agent-agnostic toolkit that works in a
 
 ### Install
 
-Three ways (see the install section below):
+Pick any of the three methods; skill files are always fetched from **npm** (GitHub can be slow without a proxy; npm supports mirrors).
 
+#### Method 1: npm (recommended, one-liner)
 ```bash
-# Way 1: one-line npx install (recommended, 8+ agents)
-npx -y @yottameta/yotta-secret --agent codex
-
-# Way 2: install.sh (requires git bash)
-bash install.sh --agent claude
-
-# Way 3: copy yottaskills/yotta-secret/ into the agent's skills directory
+# Optional China mirror: npm config set registry https://registry.npmmirror.com
+npx -y @yottameta/yotta-secret -g
+npx -y @yottameta/yotta-secret --dir <your skills dir>   # any agent: install to a custom directory
 ```
+> Agent not in the preset list? Use `--dir` to point at its skills directory, or copy manually (Method 3). `--list` shows the default directory of each agent.
 
-### Usage
+#### Method 2: install.sh
+After obtaining the skill folder (`npm pack` unpack or `git clone`), enter the folder:
+```bash
+bash install.sh -g    # user-level; bash install.sh --list shows all directories
+bash install.sh --agent codex   # a specific agent (see --list)
+bash install.sh       # project-level: auto-detect existing skills directories
+bash install.sh --dir /path/to/skills
+```
+> Covers 17 agent families, including Trae / Qwen / Comate / CodeBuddy / Kimi.
+
+#### Method 3: manual copy
+Copy the whole `yotta-secret` folder into the target agent's skills directory. Common user-level locations (`%USERPROFILE%` on Windows, `~` on Linux/macOS):
+
+| Agent | User-level directory | Project-level directory |
+|---|---|---|
+| Codex | `%USERPROFILE%\.codex\skills\yotta-secret\` | `.codex\skills\` |
+| Claude Code | `%USERPROFILE%\.claude\skills\yotta-secret\` | `.claude\skills\` |
+| Cursor | `%USERPROFILE%\.cursor\skills\yotta-secret\` | `.cursor\skills\` |
+| Windsurf | `%USERPROFILE%\.codeium\windsurf\skills\yotta-secret\` | `.windsurf\skills\` |
+| opencode | `%USERPROFILE%\.config\opencode\skills\yotta-secret\` | `.opencode\skills\` |
+| Gemini | `%USERPROFILE%\.gemini\skills\yotta-secret\` | `.gemini\skills\` |
+| Goose | `%USERPROFILE%\.config\goose\skills\yotta-secret\` | `.goose\skills\` |
+| Amp | `%USERPROFILE%\.config\agents\skills\yotta-secret\` | `.agents\skills\` |
+| Kiro | `%USERPROFILE%\.kiro\skills\yotta-secret\` | `.kiro\skills\` |
+| WorkBuddy | `%USERPROFILE%\.workbuddy\skills\yotta-secret\` | `.workbuddy\skills\` |
+| Trae Code CLI | `%USERPROFILE%\.traecli\skills\yotta-secret\` | `.traecli\skills\` |
+| Trae IDE (CN) | `%USERPROFILE%\.trae-cn\skills\yotta-secret\` | `.trae\skills\` |
+| Qwen Code | `%USERPROFILE%\.qwen\skills\yotta-secret\` | `.qwen\skills\` |
+| Comate | `%USERPROFILE%\.comate\skills\yotta-secret\` | `.comate\skills\` |
+| CodeBuddy | `%USERPROFILE%\.codebuddy\skills\yotta-secret\` | `.codebuddy\skills\` |
+| Kimi | `%USERPROFILE%\.kimi\skills\yotta-secret\` | `.kimi\skills\` |
+| Generic AGENTS.md | `%USERPROFILE%\.agents\skills\yotta-secret\` | `.agents\skills\` |
+
+> If Codex's `CODEX_HOME` is set, it overrides the default; the same applies to opencode's `XDG_CONFIG_HOME`. `.agents\skills` is not a universal directory — only OpenCode / Cursor / Cline / Amp / Kimi / Gemini CLI / GitHub Copilot etc. read it; **Claude Code and Codex do not read it by default**. When unsure, use `--dir` or let the agent install it.
+
 
 Windows uses python, Linux/macOS uses python3.
 

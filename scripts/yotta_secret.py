@@ -56,7 +56,7 @@ try:
 except Exception:
     pass
 
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 TOOL = "yotta-secret"
 TOOL_CN = "元钥"
 

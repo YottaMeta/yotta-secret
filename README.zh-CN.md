@@ -66,23 +66,55 @@
 
 ### 安装
 
-三种方式任选（详细见下方「安装」节）：
+三种方式任选其一，技能文件统一从 **npm** 获取（GitHub 无代理时较慢，npm 可配国内镜像加速）。
 
-`bash
-# 方式一：npx 一行安装（推荐，8+ 类智能体）
-npx -y @yottameta/yotta-secret --agent codex
+#### 方式一：npm（推荐，一行安装）
+```bash
+# 国内加速（可选）：npm config set registry https://registry.npmmirror.com
+npx -y @yottameta/yotta-secret -g
+npx -y @yottameta/yotta-secret --dir <你的技能目录>   # 任意智能体：指定目录安装
+```
+> 智能体不在预置列表里？用 `--dir` 指定它的 skills 目录，或手动复制（方式三）。`--list` 可查看各智能体对应的默认目录。想手动拿文件也可 `npm pack @yottameta/yotta-secret` 解包后按方式二/三安装。
 
-# 方式二：install.sh（需 git bash）
-bash install.sh --agent claude
+#### 方式二：install.sh 一键安装
+获取技能文件夹后（`npm pack` 解包或 `git clone`），进入技能文件夹：
+```bash
+bash install.sh -g    # 用户级；bash install.sh --list 查看全部目录
+bash install.sh --agent codex   # 指定智能体（--list 可查看可用项）
+bash install.sh       # 项目级：自动检测已存在的 .claude/.cursor/.codex 等 skills 目录
+bash install.sh --dir /path/to/skills
+```
+> 覆盖 17 类智能体，含国内 Trae / Qwen / Comate / CodeBuddy / Kimi。Windows 用户：装有 Git Bash 即可用；否则用方式三手动复制。
 
-# 方式三：手动复制 yottaskills/yotta-secret/ 到智能体的 skills 目录
-`
+#### 方式三：手动复制
+把整个 `yotta-secret` 文件夹复制到目标智能体的 skills 目录。常见位置（用户级；Windows 用 `%USERPROFILE%`，Linux/macOS 用 `~`）：
 
-### 使用
+| 智能体 | 用户级目录 | 项目级目录 |
+|---|---|---|
+| Codex | `%USERPROFILE%\.codex\skills\yotta-secret\` | `.codex\skills\` |
+| Claude Code | `%USERPROFILE%\.claude\skills\yotta-secret\` | `.claude\skills\` |
+| Cursor | `%USERPROFILE%\.cursor\skills\yotta-secret\` | `.cursor\skills\` |
+| Windsurf | `%USERPROFILE%\.codeium\windsurf\skills\yotta-secret\` | `.windsurf\skills\` |
+| opencode | `%USERPROFILE%\.config\opencode\skills\yotta-secret\` | `.opencode\skills\` |
+| Gemini | `%USERPROFILE%\.gemini\skills\yotta-secret\` | `.gemini\skills\` |
+| Goose | `%USERPROFILE%\.config\goose\skills\yotta-secret\` | `.goose\skills\` |
+| Amp | `%USERPROFILE%\.config\agents\skills\yotta-secret\` | `.agents\skills\` |
+| Kiro | `%USERPROFILE%\.kiro\skills\yotta-secret\` | `.kiro\skills\` |
+| WorkBuddy | `%USERPROFILE%\.workbuddy\skills\yotta-secret\` | `.workbuddy\skills\` |
+| Trae Code CLI | `%USERPROFILE%\.traecli\skills\yotta-secret\` | `.traecli\skills\` |
+| Trae IDE（国内） | `%USERPROFILE%\.trae-cn\skills\yotta-secret\` | `.trae\skills\` |
+| Qwen Code | `%USERPROFILE%\.qwen\skills\yotta-secret\` | `.qwen\skills\` |
+| Comate | `%USERPROFILE%\.comate\skills\yotta-secret\` | `.comate\skills\` |
+| CodeBuddy | `%USERPROFILE%\.codebuddy\skills\yotta-secret\` | `.codebuddy\skills\` |
+| Kimi | `%USERPROFILE%\.kimi\skills\yotta-secret\` | `.kimi\skills\` |
+| 通用 AGENTS.md | `%USERPROFILE%\.agents\skills\yotta-secret\` | `.agents\skills\` |
+
+> 若设置了 Codex 的 `CODEX_HOME`，安装自动以该变量为准；opencode 同理（`XDG_CONFIG_HOME`）。`.agents\skills` 不是通用目录——仅 OpenCode / Cursor / Cline / Amp / Kimi / Gemini CLI / GitHub Copilot 等读取；**Claude Code 与 Codex 默认不读**。不确定时用 `--dir` 或让智能体自行安装。
+
 
 Windows 用 python，Linux/macOS 用 python3。
 
-`bash
+```bash
 # 扫描目录（递归，自动跳过 .git / node_modules / 二进制）
 python3 scripts/yotta_secret.py scan --path src/
 
@@ -100,7 +132,7 @@ python3 scripts/yotta_secret.py verify --value ghp_xxxxxxxxxxxxxxxx
 
 # 把文本中的疑似密钥打码
 python3 scripts/yotta_secret.py mask --path notes.txt --output safe.txt
-`
+```
 
 退出码：**scan 0** = 未发现；**1** = 发现疑似密钥；**4** = 用法 / 读取 / git 不可用错误。
 verify 命中规则返回 1，未命中返回 0。
@@ -115,10 +147,10 @@ verify 命中规则返回 1，未命中返回 0。
 
 - 在写入 / 提交前先跑 `scan`：退出码 1 = 发现疑似密钥 → 拦截并提示人工处理；
 - `scan --format json` 的结果可直接交给元盾做审计留痕，或接入 CI 门禁：
-  `bash
+  ```bash
   python3 scripts/yotta_secret.py scan --path . --format json --output secret-report.json
   # 退出码非 0 时终止提交 / 构建
-  `
+  ```
 
 ## 检测类型
 
@@ -148,9 +180,9 @@ verify 命中规则返回 1，未命中返回 0。
 
 技能包内自带测试（含在 npm 包 files 中）：
 
-`bash
+```bash
 python scripts/test_yotta_secret.py   # 91 项测试（Windows 用 python）
-`
+```
 
 修改引擎后请保持测试全绿，再升版本发布。
 

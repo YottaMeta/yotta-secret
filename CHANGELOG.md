@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.1 (2026-08-28)
+
+README 安装说明修复 + 围栏修复（三源同步重发）：
+
+- **README.md / README.zh-CN.md 安装节重构**：移除 `npx -y @yottameta/yotta-secret --agent codex` 固定智能体安装行（违反安装规范：npx 用 -g 或 --dir，--agent 仅 install.sh 用），改为标准三方式（npm 一行 / install.sh / 手动复制 + 17 类智能体目录表）。
+- **代码围栏修复**：中文 README 中单反引号伪围栏（`bash … `）改为标准三反引号 ```bash … ```（Markdown 渲染修复，线上 0.1.0 为坏版本）。
+- 版本对齐：package.json / SKILL frontmatter / 引擎 VERSION / 测试断言 / CHANGELOG = 0.1.1。
+- 无功能 / 引擎变更。
+
 ## 0.1.0 (2026-08-27)
 
 - 初始版本：零依赖密钥 / 凭据泄露源头扫描引擎（Python 3.8+ 标准库）。
