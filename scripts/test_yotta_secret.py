@@ -315,6 +315,22 @@ class TestGeneric(unittest.TestCase):
         self.assertIn("github", ids)
         self.assertNotIn("generic", ids)
 
+    def test_badge_url_path_not_secret(self):
+        # shields.io 徽章 URL 路径中的高熵段不算密钥（与 mask 的 URL 原文保留口径一致）
+        line = '<img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen" />'
+        self.assertNotIn("generic", rule_ids(line))
+
+    def test_git_clone_url_not_secret(self):
+        # git clone 仓库 URL 的路径段不算密钥
+        line = "git clone https://github.com/YottaMeta/yotta-publish-guard.git"
+        self.assertNotIn("generic", rule_ids(line))
+
+    def test_url_query_token_still_caught_by_credential(self):
+        # URL 查询串里的 key=value 仍由 credential 规则命中（URL 豁免不吞真密钥）
+        line = "https://example.com/api?api_key=AbCdEfGhIjKlMnOpQrStUvWxYz123456"
+        ids = rule_ids(line)
+        self.assertIn("credential", ids)
+
 
 class TestDedupe(unittest.TestCase):
     def test_same_secret_two_rules_one_finding(self):
@@ -570,7 +586,7 @@ class TestMisc(unittest.TestCase):
     def test_version(self):
         r = run_cli("--version")
         self.assertEqual(r.returncode, 0)
-        self.assertEqual(r.stdout.strip(), "yotta-secret 0.1.1")
+        self.assertEqual(r.stdout.strip(), "yotta-secret 0.1.2")
 
     def test_no_command_exit_four(self):
         r = run_cli()

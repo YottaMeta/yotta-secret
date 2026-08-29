@@ -43,7 +43,7 @@
 | **误报可控** | 占位符 / 示例值 / 环境变量引用过滤，纯哈希与 UUID 排除，中等置信 key 需更长或更高熵 |
 | **源头定位** | git 历史扫描逐条带 commit 与路径，不只是「有泄露」而是「哪次提交引入」 |
 | **防二次泄露** | 输出默认打码；mask 子命令可直接给日志 / 工单脱敏（与元史同源） |
-| **生态分发** | GitHub + npm + ClawHub 三源同步；npx / install.sh / 手动复制三种安装方式 |
+| **生态分发** | GitHub + npm + ClawHub 三源同步；npx / git clone / Download ZIP / install.sh 四种安装方式 |
 
 ## 命令
 
@@ -66,51 +66,39 @@
 
 ### 安装
 
-三种方式任选其一，技能文件统一从 **npm** 获取（GitHub 无代理时较慢，npm 可配国内镜像加速）。
+以下四种方式任选，顺序即推荐优先级；技能文件一律从 **npm** 获取（GitHub 无代理较慢，npm 支持镜像）。
 
-#### 方式一：npm（推荐，一行安装）
-```bash
-# 国内加速（可选）：npm config set registry https://registry.npmmirror.com
-npx -y @yottameta/yotta-secret -g
-npx -y @yottameta/yotta-secret --dir <你的技能目录>   # 任意智能体：指定目录安装
+#### 方式一：npm 一行装（推荐）
+
+```text
+# 可选国内加速：npm config set registry https://registry.npmmirror.com
+npx -y @yottameta/yotta-secret --agent <智能体名称>      # 装到指定智能体默认用户级技能目录
+npx -y @yottameta/yotta-secret --dir <智能体的技能目录>  # 指到技能目录本身（如 ~/.codex/skills）
 ```
-> 智能体不在预置列表里？用 `--dir` 指定它的 skills 目录，或手动复制（方式三）。`--list` 可查看各智能体对应的默认目录。想手动拿文件也可 `npm pack @yottameta/yotta-secret` 解包后按方式二/三安装。
 
-#### 方式二：install.sh 一键安装
-获取技能文件夹后（`npm pack` 解包或 `git clone`），进入技能文件夹：
-```bash
-bash install.sh -g    # 用户级；bash install.sh --list 查看全部目录
-bash install.sh --agent codex   # 指定智能体（--list 可查看可用项）
-bash install.sh       # 项目级：自动检测已存在的 .claude/.cursor/.codex 等 skills 目录
-bash install.sh --dir /path/to/skills
+- `--agent <name>` 自动装到该智能体默认用户级目录；`--list` 可查看各智能体默认目录。
+- `--dir <路径>` 装到指定的技能目录；未收录的智能体用 `--dir` 指到它的技能目录。
+- npmmirror 未同步新包（404）：加 `--registry=https://registry.npmjs.org/`（国内需代理），或稍等镜像缓存。
+
+#### 方式二：git clone（开发者 / 有 git 环境）
+
+```text
+git clone https://github.com/YottaMeta/yotta-secret.git <智能体的技能目录>/yotta-secret
 ```
-> 覆盖 17 类智能体，含国内 Trae / Qwen / Comate / CodeBuddy / Kimi。Windows 用户：装有 Git Bash 即可用；否则用方式三手动复制。
 
-#### 方式三：手动复制
-把整个 `yotta-secret` 文件夹复制到目标智能体的 skills 目录。常见位置（用户级；Windows 用 `%USERPROFILE%`，Linux/macOS 用 `~`）：
+#### 方式三：GitHub 下载压缩包（手动 / 无 git 环境）
 
-| 智能体 | 用户级目录 | 项目级目录 |
-|---|---|---|
-| Codex | `%USERPROFILE%\.codex\skills\yotta-secret\` | `.codex\skills\` |
-| Claude Code | `%USERPROFILE%\.claude\skills\yotta-secret\` | `.claude\skills\` |
-| Cursor | `%USERPROFILE%\.cursor\skills\yotta-secret\` | `.cursor\skills\` |
-| Windsurf | `%USERPROFILE%\.codeium\windsurf\skills\yotta-secret\` | `.windsurf\skills\` |
-| opencode | `%USERPROFILE%\.config\opencode\skills\yotta-secret\` | `.opencode\skills\` |
-| Gemini | `%USERPROFILE%\.gemini\skills\yotta-secret\` | `.gemini\skills\` |
-| Goose | `%USERPROFILE%\.config\goose\skills\yotta-secret\` | `.goose\skills\` |
-| Amp | `%USERPROFILE%\.config\agents\skills\yotta-secret\` | `.agents\skills\` |
-| Kiro | `%USERPROFILE%\.kiro\skills\yotta-secret\` | `.kiro\skills\` |
-| WorkBuddy | `%USERPROFILE%\.workbuddy\skills\yotta-secret\` | `.workbuddy\skills\` |
-| Trae Code CLI | `%USERPROFILE%\.traecli\skills\yotta-secret\` | `.traecli\skills\` |
-| Trae IDE（国内） | `%USERPROFILE%\.trae-cn\skills\yotta-secret\` | `.trae\skills\` |
-| Qwen Code | `%USERPROFILE%\.qwen\skills\yotta-secret\` | `.qwen\skills\` |
-| Comate | `%USERPROFILE%\.comate\skills\yotta-secret\` | `.comate\skills\` |
-| CodeBuddy | `%USERPROFILE%\.codebuddy\skills\yotta-secret\` | `.codebuddy\skills\` |
-| Kimi | `%USERPROFILE%\.kimi\skills\yotta-secret\` | `.kimi\skills\` |
-| 通用 AGENTS.md | `%USERPROFILE%\.agents\skills\yotta-secret\` | `.agents\skills\` |
+在 GitHub 仓库 `YottaMeta/yotta-secret` 点 **Code → Download ZIP**，解压后把 `yotta-secret` 文件夹放进智能体技能目录。
 
-> 若设置了 Codex 的 `CODEX_HOME`，安装自动以该变量为准；opencode 同理（`XDG_CONFIG_HOME`）。`.agents\skills` 不是通用目录——仅 OpenCode / Cursor / Cline / Amp / Kimi / Gemini CLI / GitHub Copilot 等读取；**Claude Code 与 Codex 默认不读**。不确定时用 `--dir` 或让智能体自行安装。
+#### 方式四：install.sh（多智能体一键脚本）
 
+```text
+bash install.sh --agent <name>   # 装到指定智能体默认用户级目录
+bash install.sh --dir <path>     # 装到指定目录
+bash install.sh --list           # 列出智能体 -> 默认目录
+```
+
+> 方式一走 npm 源（npmmirror / npmjs），不依赖 GitHub；方式二 / 三走 GitHub，国内无代理可能失败。
 
 Windows 用 python，Linux/macOS 用 python3。
 

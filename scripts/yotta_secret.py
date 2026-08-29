@@ -56,7 +56,7 @@ try:
 except Exception:
     pass
 
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 TOOL = "yotta-secret"
 TOOL_CN = "元钥"
 
@@ -250,6 +250,14 @@ _URL_RE = re.compile(r"(https?://[^\s\"'<>]+)", re.I)
 _URL_USERPASS_RE = re.compile(r"(https?://)([^/\s:@]+):([^/\s@]+)@", re.I)
 
 
+def _inside_url(line, pos):
+    """pos 是否落在 URL（https?://...）区间内（URL 路径/查询串不算密钥）。"""
+    for um in _URL_RE.finditer(line):
+        if um.start() <= pos < um.end():
+            return True
+    return False
+
+
 def redact_text(text):
     """把疑似密钥打码（默认动作；与元史脱敏词库保持一致）。"""
     if not text:
@@ -348,6 +356,9 @@ def _apply_rule_line(rule, line, fname, lineno, opts, findings, key_cache, line_
             continue
         if rule.id == "generic":
             if not _generic_ok(value):
+                continue
+            # URL 路径/查询串不算密钥（与 mask 的 URL 原文保留口径一致）
+            if _inside_url(line, m.start()):
                 continue
             # 与同行已命中的更具体规则重叠（如 JWT 各段 / ghp_ 前缀）则跳过
             if any(v in value or value in v for v in line_values):
