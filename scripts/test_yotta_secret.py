@@ -586,7 +586,7 @@ class TestMisc(unittest.TestCase):
     def test_version(self):
         r = run_cli("--version")
         self.assertEqual(r.returncode, 0)
-        self.assertEqual(r.stdout.strip(), "yotta-secret 0.1.2")
+        self.assertEqual(r.stdout.strip(), "yotta-secret 0.2.0")
 
     def test_no_command_exit_four(self):
         r = run_cli()

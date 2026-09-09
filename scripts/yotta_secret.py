@@ -56,7 +56,7 @@ try:
 except Exception:
     pass
 
-VERSION = "0.1.2"
+VERSION = "0.2.0"
 TOOL = "yotta-secret"
 TOOL_CN = "元钥"
 
@@ -294,7 +294,7 @@ def redact_text(text):
 DEFAULT_SKIP_DIRS = frozenset({
     ".git", "node_modules", "__pycache__", ".venv", "venv", "env", "dist", "build",
     ".tox", ".pytest_cache", ".mypy_cache", ".ruff_cache", ".next", ".nuxt", ".cache",
-    ".idea", "target", ".tmp", ".workflow", ".gitlab", "coverage", ".DS_Store",
+    ".idea", "target", ".tmp", ".gitlab", "coverage", ".DS_Store",
 })
 
 BINARY_EXT = frozenset({

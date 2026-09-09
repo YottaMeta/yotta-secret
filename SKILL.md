@@ -1,6 +1,6 @@
 ---
 name: yotta-secret
-version: 0.1.2
+version: 0.2.0
 description: 元钥 —— 跨智能体的密钥 / 凭据泄露源头扫描技能：零依赖自研用「正则 + 熵 + 格式校验」离线扫描源码 / 配置 / .env / git 历史中的疑似密钥与凭据（云厂商 API Key、私钥、口令赋值、URL 内嵌凭据、高熵长 token），输出 text / JSON / CSV，默认打码防二次泄露。触发：用户要排查代码 / 配置 / 仓库里是否泄露了 API Key、密码、私钥、token，要在提交或发布前做密钥检查，或要校验某个字符串是否为已知格式的密钥时。边界：纯本地离线扫描，不联网验证密钥是否有效、不发送任何数据；结果只是「疑似密钥」，是否真实需人工核实；仅用于已获授权 / 自有资产 / 教学环境。
 license: MIT
 ---
@@ -108,6 +108,10 @@ python3 scripts/yotta_secret.py entropy --value abc123
 - references/rules.md — 规则目录与匹配说明（五类规则 / 判定流程 / 已知取舍）
 - references/entropy-and-verification.md — 熵与格式校验规范（阈值 / 占位符过滤 / 校验函数）
 - references/integration.md — 与元史脱敏词库共享、与元盾联动、CI / 提交门禁使用姿势
+
+## 常见问题（速查）
+
+扫不到、误报、git 历史、打码与明文、退出码问题先看 references/faq.md（含速查索引与安装排障）。
 
 ## 法律声明
 
