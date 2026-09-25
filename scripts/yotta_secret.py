@@ -56,7 +56,7 @@ try:
 except Exception:
     pass
 
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 TOOL = "yotta-secret"
 TOOL_CN = "元钥"
 
@@ -110,12 +110,33 @@ def is_placeholder(value):
     return bool(_PLACEHOLDER_RE.match(v))
 
 
+# 可安全保留的类型前缀（ghp_ / sk- / AKIA? 不保留无分隔符前缀）
+_SECRET_PREFIX_RE = re.compile(r"^([A-Za-z][A-Za-z0-9]{1,7}[_-])")
+
+
 def mask_secret(value):
-    """打码：保留头尾，中间 ****；过短全部打码。"""
+    """打码：只保留可识别的类型前缀（如 ghp_ / sk-），其余全部遮蔽。
+
+    v0.2.1：旧行为保留首尾各 4 个字符，长密钥仍会露出 8 个字符明文；
+    现在默认全遮，只有 --show-secret 才输出原文。
+    """
     v = value.strip()
-    if len(v) <= 8:
+    if not v:
         return "****"
-    return v[:4] + "****" + v[-4:]
+    m = _SECRET_PREFIX_RE.match(v)
+    prefix = m.group(1) if m else ""
+    if len(prefix) > 8:
+        prefix = prefix[:8]
+    return prefix + "****"
+
+
+def masked_snippet(text, span, display):
+    """用打码后的值替换命中片段，生成可安全展示的上下文。"""
+    try:
+        masked = text[:span[0]] + display + text[span[1]:]
+    except (IndexError, TypeError):
+        return display
+    return masked.strip()[:200]
 
 
 # ── 规则 ──────────────────────────────────────────────────────────────────
@@ -399,8 +420,7 @@ def _apply_rule_line(rule, line, fname, lineno, opts, findings, key_cache, line_
             span = m.span(0)
         line_values.add(value)
         display = value if opts.show_secret else mask_secret(value)
-        snippet = line.strip()
-        snippet = snippet[: span[0]] + display + snippet[span[1]:]
+        snippet = masked_snippet(line, span, display)
         findings.append({
             "rule_id": rule.id,
             "rule_name": rule.name,
@@ -430,7 +450,9 @@ def _apply_rule_block(rule, text, fname, opts, findings, key_cache):
         display = "[PRIVATE KEY REDACTED]"
         if opts.show_secret:
             display = value[:12] + "...(%d chars)" % len(value)
-        snippet = " ".join(value.split())[:200]
+        # v0.2.1：默认上下文只给打码标记 —— 旧行为把私钥正文前 200 字符原样写进
+        # findings.snippet（报告默认打印），等于泄露密钥本体。
+        snippet = display
         findings.append({
             "rule_id": rule.id,
             "rule_name": rule.name,
@@ -530,6 +552,10 @@ def git_scan(path, opts):
                         if is_placeholder(value) or user.strip().lower() in ("user", "username", "login"):
                             continue
                     display = value if opts.show_secret else mask_secret(value)
+                    try:
+                        span = m.span(rule.group)
+                    except IndexError:
+                        span = m.span(0)
                     findings.append({
                         "rule_id": rule.id,
                         "rule_name": rule.name,
@@ -540,7 +566,7 @@ def git_scan(path, opts):
                         "secret": display,
                         "length": len(value),
                         "entropy": round(shannon_entropy(value), 3),
-                        "snippet": content.strip()[:200],
+                        "snippet": masked_snippet(content, span, display),
                         "commit": commit,
                         "path_in_commit": cur_path,
                     })

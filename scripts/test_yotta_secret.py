@@ -89,10 +89,14 @@ class TestMaskSecret(unittest.TestCase):
     def test_long(self):
         v = "ghp_abcdefghijklmnopqrstuvwxyz1234567890"
         m = ys.mask_secret(v)
-        self.assertTrue(m.startswith("ghp_"))
-        self.assertTrue(m.endswith("7890"))
-        self.assertIn("****", m)
+        # v0.2.1：默认只保留类型前缀，正文（含尾部 4 位）一律不露出
+        self.assertEqual(m, "ghp_****")
         self.assertNotIn("abcdefghijk", m)
+        self.assertNotIn("7890", m)
+
+    def test_no_prefix_fully_masked(self):
+        self.assertEqual(ys.mask_secret("AKIAIOSFODNN7EXAMPLE"), "****")
+        self.assertEqual(ys.mask_secret("a1b2c3d4e5f6g7h8i9j0"), "****")
 
 
 class TestCloudRules(unittest.TestCase):
@@ -227,6 +231,15 @@ class TestPrivateKey(unittest.TestCase):
     def test_pem_masked_by_default(self):
         secs = secrets_of(self.PEM_RSA)
         self.assertTrue(all("REDACTED" in s or "****" in s for s in secs))
+
+    def test_pem_snippet_redacted_by_default(self):
+        """v0.2.1：默认报告上下文不得包含私钥正文。"""
+        findings = scan_text(self.PEM_RSA)
+        self.assertTrue(findings)
+        for f in findings:
+            self.assertNotIn("MIIEowIBAAKCAQEA", f["snippet"])
+        self.assertTrue(any("REDACTED" in f["snippet"] for f in findings),
+                        [f["snippet"] for f in findings])
 
     def test_pgp(self):
         self.assertIn("pgp_private", rule_ids(self.PGP))
@@ -560,6 +573,22 @@ class TestGitScanCLI(unittest.TestCase):
         self.assertTrue(any(f["file"] == "app.py" and f["path_in_commit"] == "app.py"
                             for f in data["findings"]))
 
+    def test_git_history_snippet_masked(self):
+        """v0.2.1：git 历史的默认输出同样不得含明文密钥。"""
+        self.git("init", "-q")
+        with open(os.path.join(self.root, "app.py"), "w", encoding="utf-8") as f:
+            f.write("DB_PASSWORD = 'Sup3rS3cret!123'\n")
+        self.git("add", ".")
+        r = self.git("commit", "-q", "-m", "init")
+        self.assertEqual(r.returncode, 0, r.stderr.decode())
+        r = run_cli("scan", "--git", "--path", self.root, "--format", "json")
+        self.assertEqual(r.returncode, 1, r.stderr)
+        data = json.loads(r.stdout)
+        self.assertGreaterEqual(data["summary"]["total"], 1)
+        for f in data["findings"]:
+            self.assertNotIn("Sup3rS3cret", f["snippet"])
+            self.assertNotIn("Sup3rS3cret", f["secret"])
+
     def test_git_clean_history_exit_zero(self):
         self.git("init", "-q")
         with open(os.path.join(self.root, "app.py"), "w", encoding="utf-8") as f:
@@ -586,7 +615,7 @@ class TestMisc(unittest.TestCase):
     def test_version(self):
         r = run_cli("--version")
         self.assertEqual(r.returncode, 0)
-        self.assertEqual(r.stdout.strip(), "yotta-secret 0.2.0")
+        self.assertEqual(r.stdout.strip(), "yotta-secret 0.2.1")
 
     def test_no_command_exit_four(self):
         r = run_cli()
